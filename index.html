@@ -1,0 +1,1212 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#09090b" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Bedrock Studio AI</title>
+
+  <link id="dynamicManifest" rel="manifest" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script>
+    if (window.tailwind) {
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+              mono: ['JetBrains Mono', 'monospace'],
+            },
+            colors: {
+              bgMain: '#09090b',
+              bgCard: '#121215',
+              bgElevated: '#18181c',
+              borderSubtle: '#26262c',
+              accent: '#10b981',
+              accentHover: '#059669',
+            }
+          }
+        }
+      };
+    }
+  </script>
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+    html, body {
+      height: 100dvh;
+      margin: 0;
+      padding: 0;
+      background-color: #09090b;
+      color: #f4f4f5;
+      overflow: hidden;
+      overscroll-behavior: none;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+    ::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #27272a;
+      border-radius: 9999px;
+    }
+    .pixelated {
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+    }
+    @keyframes pulseDot {
+      0%, 100% { opacity: 0.3; transform: scale(0.85); }
+      50% { opacity: 1; transform: scale(1); }
+    }
+    .typing-dot {
+      animation: pulseDot 1.3s infinite ease-in-out;
+    }
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+  </style>
+</head>
+<body class="flex flex-col h-dvh bg-[#09090b] text-zinc-100 antialiased">
+
+  <!-- Header Minimalista -->
+  <header class="shrink-0 h-14 px-3 sm:px-6 border-b border-[#26262c] bg-[#09090b]/95 backdrop-blur-md flex items-center justify-between z-20">
+    <div class="flex items-center gap-2.5 min-w-0">
+      <div class="w-8 h-8 rounded-lg bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+          <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+          <line x1="12" y1="22.08" x2="12" y2="12"/>
+        </svg>
+      </div>
+      <div class="min-w-0">
+        <div class="flex items-center gap-1.5">
+          <h1 class="text-sm font-semibold tracking-tight text-zinc-100 truncate">Bedrock Studio AI</h1>
+          <span id="projectBadge" class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 truncate max-w-[140px]">Sin addon activo</span>
+        </div>
+        <p id="statusText" class="text-[11px] text-zinc-400 flex items-center gap-1.5 truncate">
+          <span id="statusDot" class="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0"></span>
+          <span id="statusLabel">Listo · Arma y edita tu addon paso a paso</span>
+        </p>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-1.5 shrink-0">
+      <button type="button" onclick="openSettingsModal()" title="Configurar API Key"
+        class="p-2 rounded-lg text-zinc-400 hover:text-zinc-100 hover:bg-[#18181c] border border-[#26262c] transition">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+      </button>
+
+      <button type="button" onclick="clearChat()" title="Nuevo proyecto / limpiar chat"
+        class="text-xs text-zinc-400 hover:text-zinc-100 px-2.5 py-1.5 rounded-lg hover:bg-[#18181c] border border-[#26262c] transition flex items-center gap-1.5">
+        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+        </svg>
+        <span class="hidden sm:inline">Limpiar chat</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Área de Chat -->
+  <main id="chatScroll" class="flex-1 overflow-y-auto px-3 sm:px-6 py-5">
+    <div id="chatContainer" class="max-w-3xl mx-auto flex flex-col gap-5 pb-4">
+
+      <div id="welcomeScreen" class="my-auto py-6 sm:py-10 flex flex-col items-center text-center">
+        <div class="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/25 flex items-center justify-center text-emerald-400 mb-4 shadow-lg shadow-emerald-950/30">
+          <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="12 2 2 7 12 12 22 7 12 2"/>
+            <polyline points="2 17 12 22 22 17"/>
+            <polyline points="2 12 12 17 22 12"/>
+          </svg>
+        </div>
+        <h2 class="text-xl sm:text-2xl font-semibold text-zinc-100 tracking-tight mb-2">
+          ¿Qué quieres hacer hoy?
+        </h2>
+        <p class="text-sm text-zinc-400 max-w-md mb-6 leading-relaxed">
+          Dime qué addon quieres o súbelo. Iré guardando y editando tu proyecto paso a paso hasta que me digas que te lo pase.
+        </p>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 w-full max-w-xl text-left">
+          <button type="button" onclick="usePrompt('Quiero empezar un addon de minijuegos con menú UI para PvP, Parkour y Tienda.')"
+            class="p-3.5 rounded-xl bg-[#121215] hover:bg-[#18181c] border border-[#26262c] hover:border-zinc-700 transition group">
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-xs font-semibold text-emerald-400">Iniciar Addon</span>
+              <span class="text-zinc-600 group-hover:text-zinc-400 text-xs">→</span>
+            </div>
+            <p class="text-xs text-zinc-400 line-clamp-2">Crea la base del proyecto para ir agregando funciones sin enviarlo aún.</p>
+          </button>
+
+          <button type="button" onclick="usePrompt('Agrega protección contra romper bloques y un kit de espada y armadura al entrar.')"
+            class="p-3.5 rounded-xl bg-[#121215] hover:bg-[#18181c] border border-[#26262c] hover:border-zinc-700 transition group">
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-xs font-semibold text-sky-400">Añadir Función / Script</span>
+              <span class="text-zinc-600 group-hover:text-zinc-400 text-xs">→</span>
+            </div>
+            <p class="text-xs text-zinc-400 line-clamp-2">Modifica el script activo del proyecto según lo que pidas.</p>
+          </button>
+
+          <button type="button" onclick="usePrompt('Crea una textura 16x16 de control oscuro con botones de colores y añádela al addon.')"
+            class="p-3.5 rounded-xl bg-[#121215] hover:bg-[#18181c] border border-[#26262c] hover:border-zinc-700 transition group">
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-xs font-semibold text-amber-400">Crear Textura 16x16</span>
+              <span class="text-zinc-600 group-hover:text-zinc-400 text-xs">→</span>
+            </div>
+            <p class="text-xs text-zinc-400 line-clamp-2">Genera el sprite PNG y guárdalo dentro del paquete.</p>
+          </button>
+
+          <button type="button" onclick="usePrompt('Ya quedó listo, pásame el archivo .mcaddon')"
+            class="p-3.5 rounded-xl bg-[#121215] hover:bg-[#18181c] border border-[#26262c] hover:border-zinc-700 transition group">
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-xs font-semibold text-purple-400">Entregar Addon</span>
+              <span class="text-zinc-600 group-hover:text-zinc-400 text-xs">↓</span>
+            </div>
+            <p class="text-xs text-zinc-400 line-clamp-2">Empaqueta todo lo trabajado y genera el botón de descarga.</p>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Barra Inferior de Entrada -->
+  <footer class="shrink-0 px-3 sm:px-6 pb-3 pt-2 bg-[#09090b] border-t border-[#26262c]/70">
+    <div class="max-w-3xl mx-auto">
+      <div id="attachmentPreviewBar" class="hidden flex-wrap gap-2 mb-2.5 max-h-28 overflow-y-auto p-1"></div>
+
+      <div class="relative flex items-end gap-2 bg-[#121215] border border-[#26262c] focus-within:border-zinc-600 rounded-2xl p-2 shadow-lg">
+        <input type="file" id="fileInput" multiple
+          class="hidden" onchange="handleFilesSelected(event)" />
+
+        <button type="button" onclick="triggerFileInput()" title="Importar imagen, .mcaddon, .zip, .js o documento"
+          class="shrink-0 w-9 h-9 rounded-xl flex items-center justify-center text-zinc-400 hover:text-zinc-100 hover:bg-[#18181c] transition">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+          </svg>
+        </button>
+
+        <textarea id="promptInput" rows="1" placeholder="Dime qué quieres hacer o cambiar en el addon..."
+          class="flex-1 bg-transparent text-sm text-zinc-100 placeholder-zinc-500 resize-none border-0 focus:outline-none py-2 max-h-36 leading-relaxed"
+          oninput="autoResizeTextarea(this)"
+          onkeydown="handleInputKeydown(event)"></textarea>
+
+        <button id="sendBtn" type="button" onclick="sendMessage()" title="Enviar"
+          class="shrink-0 w-9 h-9 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 disabled:pointer-events-none text-white flex items-center justify-center transition shadow-sm">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
+            <line x1="12" y1="19" x2="12" y2="5"/>
+            <polyline points="5 12 12 5 19 12"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Modal de Configuración de API Key -->
+  <div id="settingsModal" class="hidden fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-[#121215] border border-[#26262c] rounded-2xl max-w-md w-full p-5 shadow-2xl">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-sm font-semibold text-zinc-100">Conexión de IA</h3>
+        <button type="button" onclick="closeSettingsModal()" class="text-zinc-400 hover:text-zinc-100 text-lg leading-none">&times;</button>
+      </div>
+      <p class="text-xs text-zinc-400 leading-relaxed mb-3">
+        Pega aquí tu clave gratuita de <strong>Google AI Studio</strong> para respuestas de IA más flexibles, o usa el <strong>Motor Local</strong> que analiza tus instrucciones y edita tu addon paso a paso.
+      </p>
+      <label class="block text-[11px] font-medium text-zinc-300 mb-1">API Key de Gemini (Opcional)</label>
+      <input id="apiKeyInput" type="password" placeholder="AIzaSy..."
+        class="w-full px-3 py-2 rounded-xl bg-[#09090b] border border-[#26262c] text-xs text-zinc-100 font-mono focus:outline-none focus:border-emerald-500 mb-4" />
+      <div class="flex items-center justify-end gap-2">
+        <button type="button" onclick="clearApiKey()" class="px-3 py-1.5 rounded-lg text-xs text-zinc-400 hover:text-zinc-200 hover:bg-[#18181c]">
+          Usar modo local
+        </button>
+        <button type="button" onclick="saveApiKey()" class="px-3.5 py-1.5 rounded-lg text-xs font-medium bg-emerald-600 hover:bg-emerald-500 text-white">
+          Guardar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function setupManifest() {
+      try {
+        const manifest = {
+          name: "Bedrock Studio AI",
+          short_name: "Bedrock AI",
+          start_url: ".",
+          display: "standalone",
+          background_color: "#09090b",
+          theme_color: "#09090b",
+          description: "Crea, analiza y edita addons de Minecraft Bedrock paso a paso."
+        };
+        const blob = new Blob([JSON.stringify(manifest)], { type: "application/manifest+json" });
+        const link = document.getElementById("dynamicManifest");
+        if (link) link.href = URL.createObjectURL(blob);
+      } catch (e) {}
+    })();
+
+    const state = {
+      messages: [],
+      pendingAttachments: [],
+      isGenerating: false,
+      project: {
+        name: "Mi_Addon_MCBE",
+        bpUuid: null,
+        rpUuid: null,
+        files: {},
+        features: [],
+        notes: []
+      }
+    };
+
+    const BUILTIN_KEY = "";
+
+    function getActiveApiKey() {
+      try {
+        const saved = localStorage.getItem('bedrock_studio_api_key');
+        if (saved && saved.trim()) return saved.trim();
+      } catch (e) {}
+      if (BUILTIN_KEY && BUILTIN_KEY.trim()) return BUILTIN_KEY.trim();
+      return '';
+    }
+
+    function updateStatusIndicator(modeText, isWarning) {
+      const label = document.getElementById('statusLabel');
+      const dot = document.getElementById('statusDot');
+      if (label) label.textContent = modeText;
+      if (dot) {
+        dot.className = isWarning
+          ? 'w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0'
+          : 'w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0';
+      }
+    }
+
+    function refreshProjectBadge() {
+      const badge = document.getElementById('projectBadge');
+      if (!badge) return;
+      const fileCount = Object.keys(state.project.files).length;
+      if (fileCount === 0) {
+        badge.textContent = 'Sin addon activo';
+      } else {
+        badge.textContent = state.project.name + ' (' + fileCount + ')';
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', function() {
+      const key = getActiveApiKey();
+      if (key) {
+        updateStatusIndicator('IA Conectada · Edita tu addon paso a paso', false);
+      } else {
+        updateStatusIndicator('Motor Bedrock · Analiza y edita en el chat', false);
+      }
+      refreshProjectBadge();
+    });
+
+    function openSettingsModal() {
+      try {
+        document.getElementById('apiKeyInput').value = localStorage.getItem('bedrock_studio_api_key') || '';
+      } catch (e) {}
+      document.getElementById('settingsModal').classList.remove('hidden');
+    }
+
+    function closeSettingsModal() {
+      document.getElementById('settingsModal').classList.add('hidden');
+    }
+
+    function saveApiKey() {
+      const val = document.getElementById('apiKeyInput').value.trim();
+      try {
+        if (val) {
+          localStorage.setItem('bedrock_studio_api_key', val);
+          updateStatusIndicator('IA Conectada · Clave personalizada activa', false);
+        } else {
+          localStorage.removeItem('bedrock_studio_api_key');
+          updateStatusIndicator('Motor Bedrock · Analiza y edita en el chat', false);
+        }
+      } catch (e) {}
+      closeSettingsModal();
+    }
+
+    function clearApiKey() {
+      try {
+        localStorage.removeItem('bedrock_studio_api_key');
+      } catch (e) {}
+      document.getElementById('apiKeyInput').value = '';
+      updateStatusIndicator('Motor Bedrock · Analiza y edita en el chat', false);
+      closeSettingsModal();
+    }
+
+    function generateUUID() {
+      if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        const r = Math.random() * 16 | 0;
+        const v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+      });
+    }
+
+    function autoResizeTextarea(el) {
+      el.style.height = 'auto';
+      el.style.height = Math.min(el.scrollHeight, 144) + 'px';
+    }
+
+    function handleInputKeydown(e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    }
+
+    function usePrompt(text) {
+      const input = document.getElementById('promptInput');
+      input.value = text;
+      autoResizeTextarea(input);
+      input.focus();
+    }
+
+    function triggerFileInput() {
+      document.getElementById('fileInput').click();
+    }
+
+    function stripJsonComments(str) {
+      return str
+        .replace(/\\"|"(?:\\"|[^"])*"|(\/\/.*|\/\*[\s\S]*?\*\/)/g, function(m, g) { return g ? "" : m; })
+        .replace(/,\s*([\]}])/g, '$1');
+    }
+
+    function ensureBaseProject(customName) {
+      if (customName) {
+        state.project.name = customName.replace(/[^a-zA-Z0-9_-]/g, '_').replace(/_+/g, '_') || 'Addon_MCBE';
+      }
+      if (!state.project.bpUuid) state.project.bpUuid = generateUUID();
+      if (!state.project.rpUuid) state.project.rpUuid = generateUUID();
+
+      if (!state.project.files['BehaviorPack/manifest.json']) {
+        state.project.files['BehaviorPack/manifest.json'] = {
+          isBinary: false,
+          content: JSON.stringify({
+            format_version: 2,
+            header: {
+              name: state.project.name + " BP",
+              description: "Creado y editado con Bedrock Studio AI",
+              uuid: state.project.bpUuid,
+              version: [1, 0, 0],
+              min_engine_version: [1, 21, 0]
+            },
+            modules: [
+              { type: "data", uuid: generateUUID(), version: [1, 0, 0] },
+              { type: "script", language: "javascript", uuid: generateUUID(), version: [1, 0, 0], entry: "scripts/main.js" }
+            ],
+            dependencies: [
+              { module_name: "@minecraft/server", version: "1.14.0" },
+              { module_name: "@minecraft/server-ui", version: "1.3.0" },
+              { uuid: state.project.rpUuid, version: [1, 0, 0] }
+            ]
+          }, null, 2)
+        };
+      }
+
+      if (!state.project.files['ResourcePack/manifest.json']) {
+        state.project.files['ResourcePack/manifest.json'] = {
+          isBinary: false,
+          content: JSON.stringify({
+            format_version: 2,
+            header: {
+              name: state.project.name + " RP",
+              description: "Recursos y texturas",
+              uuid: state.project.rpUuid,
+              version: [1, 0, 0],
+              min_engine_version: [1, 21, 0]
+            },
+            modules: [
+              { type: "resources", uuid: generateUUID(), version: [1, 0, 0] }
+            ]
+          }, null, 2)
+        };
+      }
+
+      if (!state.project.files['BehaviorPack/scripts/main.js']) {
+        state.project.files['BehaviorPack/scripts/main.js'] = {
+          isBinary: false,
+          content: [
+            'import { world, system } from "@minecraft/server";',
+            'import { ActionFormData } from "@minecraft/server-ui";',
+            '',
+            'world.afterEvents.playerSpawn.subscribe((ev) => {',
+            '  if (ev.initialSpawn) {',
+            '    ev.player.sendMessage("§a¡Addon activo en el mundo!");',
+            '  }',
+            '});'
+          ].join('\n')
+        };
+      }
+
+      refreshProjectBadge();
+    }
+
+    async function loadArchiveIntoProject(file, arrayBuffer) {
+      if (!window.JSZip) {
+        throw new Error('JSZip no ha cargado aún.');
+      }
+      const zip = await JSZip.loadAsync(arrayBuffer);
+      const entries = Object.keys(zip.files).filter(function(name) { return !zip.files[name].dir; });
+
+      state.project.name = file.name.replace(/\.(mcaddon|zip|mcpack)$/i, '').replace(/[^a-zA-Z0-9_-]/g, '_');
+      state.project.files = {};
+      state.project.features = [];
+      state.project.notes = [];
+
+      const report = {
+        totalFiles: entries.length,
+        manifests: [],
+        jsonErrors: [],
+        scripts: [],
+        uiFiles: [],
+        textures: [],
+        foldersTop: new Set(),
+        issues: []
+      };
+
+      for (const path of entries) {
+        const parts = path.split('/');
+        if (parts.length > 1) report.foldersTop.add(parts[0]);
+        const lower = path.toLowerCase();
+
+        if (lower.endsWith('.js')) report.scripts.push(path);
+        else if (lower.includes('ui/') && lower.endsWith('.json')) report.uiFiles.push(path);
+        else if (lower.endsWith('.png') || lower.endsWith('.tga')) report.textures.push(path);
+
+        const isText = /\.(js|json|txt|mcfunction|lang|material|h|jsonc)$/i.test(path);
+        if (isText) {
+          let txt = await zip.files[path].async('string');
+          if (lower.endsWith('.json')) {
+            try {
+              const clean = stripJsonComments(txt);
+              const parsed = JSON.parse(clean);
+              txt = JSON.stringify(parsed, null, 2);
+              if (lower.endsWith('manifest.json')) {
+                report.manifests.push({
+                  path: path,
+                  name: (parsed.header && parsed.header.name) || 'Sin nombre',
+                  uuid: (parsed.header && parsed.header.uuid) || 'FALTANTE'
+                });
+                if (parsed.header && parsed.header.uuid) {
+                  if (lower.includes('resource') || lower.includes('rp')) state.project.rpUuid = parsed.header.uuid;
+                  else state.project.bpUuid = parsed.header.uuid;
+                }
+              }
+            } catch (err) {
+              report.jsonErrors.push({ path: path, error: err.message });
+              report.issues.push('JSON con error en "' + path + '": ' + err.message);
+            }
+          }
+          state.project.files[path] = { isBinary: false, content: txt };
+        } else {
+          const bin = await zip.files[path].async('uint8array');
+          state.project.files[path] = { isBinary: true, content: bin };
+        }
+      }
+
+      if (report.manifests.length === 0) {
+        report.issues.push('No tenía manifest.json; se creará uno base si lo exportas.');
+      }
+
+      ensureBaseProject();
+
+      let summary = '=== ADDON CARGADO EN PROYECTO: ' + file.name + ' ===\n';
+      summary += '• Archivos cargados: ' + report.totalFiles + '\n';
+      summary += '• Scripts (.js): ' + report.scripts.length + ' | Menús UI: ' + report.uiFiles.length + ' | Texturas: ' + report.textures.length + '\n';
+      if (report.issues.length > 0) {
+        summary += '• Detalles detectados: ' + report.issues.slice(0, 10).join(' | ') + '\n';
+      }
+      return { summary: summary, report: report };
+    }
+
+    async function handleFilesSelected(event) {
+      const files = Array.from(event.target.files || []);
+      if (!files.length) return;
+
+      for (const file of files) {
+        const ext = file.name.split('.').pop().toLowerCase();
+
+        if (file.type.startsWith('image/') || ['png', 'jpg', 'jpeg', 'webp'].includes(ext)) {
+          const dataUrl = await readFileAsDataURL(file);
+          const base64 = dataUrl.split(',')[1];
+          state.pendingAttachments.push({
+            id: generateUUID(),
+            name: file.name,
+            kind: 'image',
+            mimeType: file.type || 'image/png',
+            dataUrl: dataUrl,
+            base64: base64
+          });
+        } else if (['zip', 'mcaddon', 'mcpack'].includes(ext)) {
+          try {
+            const arrayBuffer = await file.arrayBuffer();
+            const loaded = await loadArchiveIntoProject(file, arrayBuffer);
+            state.pendingAttachments.push({
+              id: generateUUID(),
+              name: file.name,
+              kind: 'archive',
+              ext: ext,
+              fileCount: loaded.report.totalFiles,
+              extractedText: loaded.summary,
+              archiveReport: loaded.report
+            });
+          } catch (err) {
+            state.pendingAttachments.push({
+              id: generateUUID(),
+              name: file.name,
+              kind: 'text',
+              ext: ext,
+              extractedText: '[Error al leer ' + file.name + ': ' + err.message + ']'
+            });
+          }
+        } else {
+          const text = await file.text();
+          state.pendingAttachments.push({
+            id: generateUUID(),
+            name: file.name,
+            kind: 'text',
+            ext: ext,
+            extractedText: text.slice(0, 25000)
+          });
+        }
+      }
+
+      event.target.value = '';
+      renderAttachmentPreview();
+    }
+
+    function readFileAsDataURL(file) {
+      return new Promise(function(resolve, reject) {
+        const reader = new FileReader();
+        reader.onload = function() { resolve(reader.result); };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function removePendingAttachment(id) {
+      state.pendingAttachments = state.pendingAttachments.filter(function(a) { return a.id !== id; });
+      renderAttachmentPreview();
+    }
+
+    function renderAttachmentPreview() {
+      const bar = document.getElementById('attachmentPreviewBar');
+      if (!state.pendingAttachments.length) {
+        bar.classList.add('hidden');
+        bar.classList.remove('flex');
+        bar.innerHTML = '';
+        return;
+      }
+
+      bar.classList.remove('hidden');
+      bar.classList.add('flex');
+      bar.innerHTML = state.pendingAttachments.map(function(att) {
+        if (att.kind === 'image') {
+          return '<div class="relative flex items-center gap-2 bg-[#18181c] border border-[#26262c] rounded-xl p-1.5 pr-7">' +
+            '<img src="' + att.dataUrl + '" alt="' + escapeHtml(att.name) + '" class="w-8 h-8 rounded-lg object-cover bg-black/40" />' +
+            '<span class="text-xs text-zinc-300 max-w-[120px] truncate">' + escapeHtml(att.name) + '</span>' +
+            '<button type="button" onclick="removePendingAttachment(\'' + att.id + '\')" class="absolute right-1.5 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-zinc-800 hover:bg-red-500/80 text-zinc-300 hover:text-white flex items-center justify-center text-xs">×</button>' +
+          '</div>';
+        }
+        const badge = att.kind === 'archive' ? (att.ext.toUpperCase() + ' · ' + att.fileCount) : att.ext.toUpperCase();
+        return '<div class="relative flex items-center gap-2 bg-[#18181c] border border-[#26262c] rounded-xl px-2.5 py-1.5 pr-7">' +
+          '<span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/20">' + badge + '</span>' +
+          '<span class="text-xs text-zinc-300 max-w-[140px] truncate">' + escapeHtml(att.name) + '</span>' +
+          '<button type="button" onclick="removePendingAttachment(\'' + att.id + '\')" class="absolute right-1.5 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-zinc-800 hover:bg-red-500/80 text-zinc-300 hover:text-white flex items-center justify-center text-xs">×</button>' +
+        '</div>';
+      }).join('');
+    }
+
+    async function buildProjectBlob() {
+      ensureBaseProject();
+      const zip = new JSZip();
+      for (const [path, fileObj] of Object.entries(state.project.files)) {
+        zip.file(path, fileObj.content);
+      }
+      return await zip.generateAsync({ type: 'blob' });
+    }
+
+    function userWantsDownload(text) {
+      return /\b(p[aá]samelo|p[aá]same|m[aá]ndamelo|m[aá]ndame|env[ií]amelo|env[ií]ame|descargar|dame el addon|ya est[aá] listo|listo el addon|exporta|p[aá]salo)\b/i.test(text || '');
+    }
+
+    async function analyzeAndUpdateProject(userText, attachments) {
+      const cleanText = (userText || '').trim();
+      const lower = cleanText.toLowerCase();
+      const archiveAtt = attachments.find(function(a) { return a.kind === 'archive'; });
+      const imageAtts = attachments.filter(function(a) { return a.kind === 'image'; });
+      const textAtts = attachments.filter(function(a) { return a.kind === 'text'; });
+
+      const nameMatch = cleanText.match(/(?:llamado|nombre|addon de|para)\s+([a-zA-Z0-9áéíóúÁÉÍÓÚñÑ_-]{2,24})/i);
+      if (nameMatch && !archiveAtt && Object.keys(state.project.files).length === 0) {
+        ensureBaseProject(nameMatch[1]);
+      } else {
+        ensureBaseProject();
+      }
+
+      const actionsApplied = [];
+      let textureArtifact = null;
+
+      if (archiveAtt && archiveAtt.archiveReport) {
+        const rep = archiveAtt.archiveReport;
+        actionsApplied.push('Cargué **' + archiveAtt.name + '** (' + rep.totalFiles + ' archivos) en el proyecto activo.');
+        if (rep.issues.length > 0) {
+          actionsApplied.push('Detecté ' + rep.issues.length + ' detalle(s) en el paquete (' + rep.issues.slice(0, 4).join('; ') + ').');
+        }
+      }
+
+      for (const tAtt of textAtts) {
+        const safeName = tAtt.name.replace(/^\/+/, '');
+        const targetPath = safeName.includes('/') ? safeName : 'BehaviorPack/scripts/' + safeName;
+        state.project.files[targetPath] = { isBinary: false, content: tAtt.extractedText };
+        actionsApplied.push('Guardé y vinculé `' + targetPath + '` en tu addon.');
+      }
+
+      for (const imgAtt of imageAtts) {
+        const cleanImgName = imgAtt.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+        const texPath = 'ResourcePack/textures/items/' + cleanImgName;
+        const rawBytes = atob(imgAtt.base64);
+        const arr = new Uint8Array(rawBytes.length);
+        for (let i = 0; i < rawBytes.length; i++) arr[i] = rawBytes.charCodeAt(i);
+        state.project.files[texPath] = { isBinary: true, content: arr };
+        actionsApplied.push('Agregué la imagen `' + texPath + '` al Resource Pack.');
+      }
+
+      if (/\b(textura|sprite|icono|ícono|pixel\s*art|control)\b/i.test(lower)) {
+        const P = {
+          ".": "transparent", "K": "#121318", "D": "#262936", "G": "#3e4357",
+          "L": "#5b627d", "R": "#ef4444", "B": "#3b82f6", "E": "#10b981", "Y": "#f59e0b"
+        };
+        const grid = [
+          "................", "................", "................", "...KKKKKKKKKK...",
+          "..KDDDDDDDDDDK..", ".KDGGGGGGGGGGDK.", ".KDGLLGGGGLLGDK.", ".KDGGLGGGGGGYGDK.",
+          ".KDGLLGGGGBRRDK.", ".KDGLGGGGGGEDK..", ".KDDDDDDDDDDDDK.", "..KDDDKKKKDDDK..",
+          "..KDDK....KDDK..", "...KK......KK...", "................", "................"
+        ];
+        const canvas = document.createElement('canvas');
+        canvas.width = 16;
+        canvas.height = 16;
+        const ctx = canvas.getContext('2d');
+        for (let y = 0; y < 16; y++) {
+          for (let x = 0; x < 16; x++) {
+            const c = P[grid[y][x]];
+            if (c && c !== 'transparent') {
+              ctx.fillStyle = c;
+              ctx.fillRect(x, y, 1, 1);
+            }
+          }
+        }
+        const dataUrl = canvas.toDataURL('image/png');
+        const b64 = dataUrl.split(',')[1];
+        const raw = atob(b64);
+        const u8 = new Uint8Array(raw.length);
+        for (let i = 0; i < raw.length; i++) u8[i] = raw.charCodeAt(i);
+
+        const texFile = 'ResourcePack/textures/items/custom_item.png';
+        state.project.files[texFile] = { isBinary: true, content: u8 };
+        actionsApplied.push('Generé la textura 16x16 y la guardé en `' + texFile + '`.');
+        textureArtifact = {
+          type: 'texture',
+          filename: 'custom_item.png',
+          description: 'Guardada en ResourcePack/textures/items/',
+          width: 16,
+          height: 16,
+          palette: P,
+          pixels: grid
+        };
+      }
+
+      let scriptCode = state.project.files['BehaviorPack/scripts/main.js'].content;
+      let modifiedScript = false;
+
+      const wantsMenu = /\b(men[uú]|ui|actionform|botones|bot[oó]n|minijuego|game)\b/i.test(lower);
+      if (wantsMenu) {
+        const menuButtons = [];
+        if (/pvp/i.test(lower)) menuButtons.push({ label: "§l§cPvP\\n§r§8Entrar a combate", msg: "§c[PvP] §fEntraste a la zona PvP." });
+        if (/parkour/i.test(lower)) menuButtons.push({ label: "§l§aParkour\\n§r§8Ir a recorrido", msg: "§a[Parkour] §fIniciando recorrido." });
+        if (/tienda|shop/i.test(lower)) menuButtons.push({ label: "§l§eTienda\\n§r§8Ver artículos", msg: "§e[Tienda] §fAbriendo tienda." });
+        if (/skywars/i.test(lower)) menuButtons.push({ label: "§l§bSkyWars\\n§r§8Islas", msg: "§b[SkyWars] §fUniéndote a SkyWars." });
+        if (/bedwars/i.test(lower)) menuButtons.push({ label: "§l§dBedWars\\n§r§8Camas", msg: "§d[BedWars] §fUniéndote a BedWars." });
+
+        if (menuButtons.length === 0) {
+          menuButtons.push(
+            { label: "§l§aOpción 1\\n§r§8Acción principal", msg: "§aElegiste la Opción 1." },
+            { label: "§l§eOpción 2\\n§r§8Acción secundaria", msg: "§eElegiste la Opción 2." }
+          );
+        }
+
+        const btnLines = menuButtons.map(function(b) { return '    .button("' + b.label + '")'; }).join('\n');
+        const caseLines = menuButtons.map(function(b, idx) {
+          return '    if (res.selection === ' + idx + ') player.sendMessage("' + b.msg + '");';
+        }).join('\n');
+
+        const menuBlock = [
+          '',
+          '// --- Menú UI generado según tu pedido ---',
+          'function abrirMenuAddon(player) {',
+          '  const form = new ActionFormData()',
+          '    .title("§l§8' + state.project.name.replace(/_/g, ' ') + '")',
+          '    .body("§7Elige una opción:")',
+          btnLines + ';',
+          '',
+          '  form.show(player).then((res) => {',
+          '    if (res.canceled) return;',
+          caseLines,
+          '  });',
+          '}',
+          '',
+          'world.afterEvents.itemUse.subscribe((ev) => {',
+          '  if (ev.itemStack && ev.itemStack.typeId === "minecraft:compass") {',
+          '    system.run(() => abrirMenuAddon(ev.source));',
+          '  }',
+          '});'
+        ].join('\n');
+
+        scriptCode = scriptCode.replace(/\/\/ --- Menú UI generado según tu pedido ---[\s\S]*$/m, '');
+        scriptCode = scriptCode.trimEnd() + '\n' + menuBlock + '\n';
+        modifiedScript = true;
+        state.project.features.push('Menú UI (' + menuButtons.length + ' botones)');
+        actionsApplied.push('Actualicé el menú UI con botones para: ' + menuButtons.map(function(b) { return b.label.split('\\n')[0].replace(/§./g, ''); }).join(', ') + '.');
+      }
+
+      if (/\b(proteger|protecci[oó]n|romper\s*bloques|no\s*rompan|anti[\s-]?romper|zona)\b/i.test(lower)) {
+        const protectBlock = [
+          '',
+          '// --- Protección contra romper bloques ---',
+          'world.beforeEvents.playerBreakBlock.subscribe((event) => {',
+          '  const player = event.player;',
+          '  if (!player.hasTag("admin")) {',
+          '    event.cancel = true;',
+          '    player.onScreenDisplay.setActionBar("§cNo puedes romper bloques aquí.");',
+          '  }',
+          '});'
+        ].join('\n');
+
+        scriptCode = scriptCode.replace(/\/\/ --- Protección contra romper bloques ---[\s\S]*?(?=\/\/ ---|$)/m, '');
+        scriptCode = scriptCode.trimEnd() + '\n' + protectBlock + '\n';
+        modifiedScript = true;
+        state.project.features.push('Protección de bloques');
+        actionsApplied.push('Agregué protección contra romper bloques (excepto jugadores con etiqueta `admin`).');
+      }
+
+      if (/\b(kit|espada|armadura|dar\s*items|entregue)\b/i.test(lower)) {
+        const kitBlock = [
+          '',
+          '// --- Entrega de kit al entrar ---',
+          'world.afterEvents.playerSpawn.subscribe((event) => {',
+          '  if (!event.initialSpawn) return;',
+          '  const p = event.player;',
+          '  system.run(() => {',
+          '    p.runCommand("give @s iron_sword 1");',
+          '    p.runCommand("give @s iron_helmet 1");',
+          '    p.runCommand("give @s iron_chestplate 1");',
+          '  });',
+          '});'
+        ].join('\n');
+
+        scriptCode = scriptCode.replace(/\/\/ --- Entrega de kit al entrar ---[\s\S]*?(?=\/\/ ---|$)/m, '');
+        scriptCode = scriptCode.trimEnd() + '\n' + kitBlock + '\n';
+        modifiedScript = true;
+        state.project.features.push('Kit inicial');
+        actionsApplied.push('Añadí entrega de kit (espada y armadura de hierro) al entrar.');
+      }
+
+      if (actionsApplied.length === 0 && cleanText && !userWantsDownload(cleanText)) {
+        state.project.notes.push(cleanText);
+        const noteComment = '\n// Nota del usuario: ' + cleanText.replace(/\n/g, ' ') + '\n';
+        scriptCode = scriptCode.trimEnd() + noteComment;
+        modifiedScript = true;
+        actionsApplied.push('Analicé tu pedido ("' + cleanText + '") y lo registré en `' + state.project.name + '` para seguir afinándolo.');
+      }
+
+      if (modifiedScript) {
+        state.project.files['BehaviorPack/scripts/main.js'] = { isBinary: false, content: scriptCode };
+      }
+
+      refreshProjectBadge();
+
+      const wantsFile = userWantsDownload(cleanText);
+      let replyText = '';
+
+      if (actionsApplied.length > 0) {
+        replyText += actionsApplied.map(function(a) { return '• ' + a; }).join('\n') + '\n\n';
+      }
+
+      if (wantsFile) {
+        replyText += 'Aquí tienes tu archivo **' + state.project.name + '.mcaddon** con todo lo que fuimos armando hasta ahora:';
+        const blob = await buildProjectBlob();
+        return {
+          text: replyText,
+          repairedBlob: {
+            filename: state.project.name + '.mcaddon',
+            blob: blob,
+            description: Object.keys(state.project.files).length + ' archivos listos para importar'
+          },
+          artifacts: textureArtifact ? [textureArtifact] : []
+        };
+      } else {
+        const activeList = state.project.features.length ? state.project.features.join(', ') : 'base inicial';
+        replyText += 'Lo guardé en el proyecto (**' + activeList + '**). Dime qué más quieres cambiar o agregar, y cuando quieras me dices *"pásame el addon"* y te lo entrego.';
+        return {
+          text: replyText,
+          repairedBlob: null,
+          artifacts: textureArtifact ? [textureArtifact] : []
+        };
+      }
+    }
+
+    async function sendMessage() {
+      if (state.isGenerating) return;
+      const input = document.getElementById('promptInput');
+      const text = input.value.trim();
+      const attachments = state.pendingAttachments.slice();
+      if (!text && !attachments.length) return;
+
+      const welcome = document.getElementById('welcomeScreen');
+      if (welcome) welcome.remove();
+
+      input.value = '';
+      input.style.height = 'auto';
+      state.pendingAttachments = [];
+      renderAttachmentPreview();
+
+      appendUserMessage(text, attachments);
+      state.isGenerating = true;
+      document.getElementById('sendBtn').disabled = true;
+      const typingId = appendTypingIndicator();
+
+      try {
+        const apiKey = getActiveApiKey();
+        let responsePayload;
+        if (apiKey) {
+          try {
+            responsePayload = await callGeminiWithProject(apiKey, text, attachments);
+          } catch (e) {
+            responsePayload = await analyzeAndUpdateProject(text, attachments);
+          }
+        } else {
+          await new Promise(function(r) { setTimeout(r, 250); });
+          responsePayload = await analyzeAndUpdateProject(text, attachments);
+        }
+        removeElement(typingId);
+        await appendAssistantMessage(responsePayload);
+      } catch (e) {
+        removeElement(typingId);
+        const fallback = await analyzeAndUpdateProject(text, attachments);
+        await appendAssistantMessage(fallback);
+      } finally {
+        state.isGenerating = false;
+        document.getElementById('sendBtn').disabled = false;
+        scrollToBottom();
+      }
+    }
+
+    async function callGeminiWithProject(apiKey, userText, attachments) {
+      ensureBaseProject();
+      const currentMainJs = state.project.files['BehaviorPack/scripts/main.js'].content;
+
+      const systemInstruction = [
+        'Eres Bedrock Studio AI, un colaborador directo para crear y editar addons de Minecraft Bedrock paso a paso.',
+        'Responde en español, con pocas palabras y de forma clara.',
+        'Analiza lo que el usuario pide y modifica el script actual si hace falta.',
+        'Si actualizas el script, incluye un bloque ```js ... ``` con el código completo actualizado.',
+        'Solo si el usuario pide que le pases/envíes/descargue el addon (por ejemplo "pásamelo", "dame el addon", "ya quedó"), incluye al final <deliver_addon/>.'
+      ].join(' ');
+
+      const parts = [];
+      let promptBody = 'Pedido del usuario: ' + (userText || 'Revisa los archivos adjuntos.') + '\n\nEstado actual de BehaviorPack/scripts/main.js:\n```js\n' + currentMainJs + '\n```';
+
+      for (const att of attachments) {
+        if (att.kind === 'archive' || att.kind === 'text') {
+          promptBody += '\n\n' + att.extractedText;
+        }
+      }
+      parts.push({ text: promptBody });
+
+      for (const att of attachments) {
+        if (att.kind === 'image') {
+          parts.push({ inlineData: { mimeType: att.mimeType, data: att.base64 } });
+        }
+      }
+
+      state.messages.push({ role: 'user', parts: parts });
+
+      const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' + encodeURIComponent(apiKey);
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          systemInstruction: { parts: [{ text: systemInstruction }] },
+          contents: state.messages.slice(-8)
+        })
+      });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+      const rawReply = (data && data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0] && data.candidates[0].content.parts[0].text) || '';
+      if (!rawReply) throw new Error('Vacío');
+
+      state.messages.push({ role: 'model', parts: [{ text: rawReply }] });
+
+      const jsMatch = rawReply.match(/```(?:js|javascript)\n([\s\S]*?)```/i);
+      if (jsMatch && jsMatch[1]) {
+        state.project.files['BehaviorPack/scripts/main.js'] = { isBinary: false, content: jsMatch[1].trim() };
+        refreshProjectBadge();
+      }
+
+      const wantsDeliver = /<deliver_addon\s*\/>/i.test(rawReply) || userWantsDownload(userText);
+      const cleanReply = rawReply.replace(/<deliver_addon\s*\/>/gi, '').trim();
+
+      let repairedBlob = null;
+      if (wantsDeliver) {
+        const blob = await buildProjectBlob();
+        repairedBlob = {
+          filename: state.project.name + '.mcaddon',
+          blob: blob,
+          description: Object.keys(state.project.files).length + ' archivos listos para importar'
+        };
+      }
+
+      return { text: cleanReply, artifacts: [], repairedBlob: repairedBlob };
+    }
+
+    function appendUserMessage(text, attachments) {
+      const container = document.getElementById('chatContainer');
+      const wrapper = document.createElement('div');
+      wrapper.className = 'flex flex-col items-end gap-2';
+
+      if (attachments && attachments.length) {
+        const attRow = document.createElement('div');
+        attRow.className = 'flex flex-wrap justify-end gap-2 max-w-[85%]';
+        attachments.forEach(function(att) {
+          if (att.kind === 'image') {
+            attRow.innerHTML += '<div class="rounded-xl overflow-hidden border border-[#26262c] bg-[#121215] p-1"><img src="' + att.dataUrl + '" class="max-h-40 rounded-lg object-contain" /></div>';
+          } else {
+            const sub = att.kind === 'archive' ? (att.ext.toUpperCase() + ' · ' + att.fileCount) : att.ext.toUpperCase();
+            attRow.innerHTML += '<div class="flex items-center gap-2 bg-[#18181c] border border-[#26262c] rounded-xl px-3 py-2"><span class="text-xs font-medium text-zinc-200 truncate max-w-[160px]">' + escapeHtml(att.name) + '</span><span class="text-[10px] text-emerald-400 font-mono">' + sub + '</span></div>';
+          }
+        });
+        wrapper.appendChild(attRow);
+      }
+
+      if (text) {
+        const bubble = document.createElement('div');
+        bubble.className = 'max-w-[85%] sm:max-w-[75%] rounded-2xl rounded-br-sm bg-zinc-800 border border-zinc-700/70 px-4 py-2.5 text-sm text-zinc-100 whitespace-pre-wrap leading-relaxed';
+        bubble.textContent = text;
+        wrapper.appendChild(bubble);
+      }
+
+      container.appendChild(wrapper);
+      scrollToBottom();
+    }
+
+    function appendTypingIndicator() {
+      const container = document.getElementById('chatContainer');
+      const id = 'typing-' + generateUUID();
+      const div = document.createElement('div');
+      div.id = id;
+      div.className = 'flex items-start gap-3';
+      div.innerHTML = '<div class="w-7 h-7 rounded-lg bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0 text-xs font-bold">AI</div><div class="rounded-2xl rounded-bl-sm bg-[#121215] border border-[#26262c] px-4 py-3 flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400 typing-dot"></span><span class="w-1.5 h-1.5 rounded-full bg-emerald-400 typing-dot"></span><span class="w-1.5 h-1.5 rounded-full bg-emerald-400 typing-dot"></span></div>';
+      container.appendChild(div);
+      scrollToBottom();
+      return id;
+    }
+
+    function removeElement(id) {
+      const el = document.getElementById(id);
+      if (el) el.remove();
+    }
+
+    async function appendAssistantMessage(payload) {
+      const container = document.getElementById('chatContainer');
+      const wrapper = document.createElement('div');
+      wrapper.className = 'flex items-start gap-2.5 sm:gap-3';
+
+      const avatar = document.createElement('div');
+      avatar.className = 'w-7 h-7 rounded-lg bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0 mt-0.5 text-xs font-bold';
+      avatar.textContent = 'AI';
+
+      const bodyCol = document.createElement('div');
+      bodyCol.className = 'flex-1 min-w-0 flex flex-col gap-3';
+
+      if (payload.text) {
+        const textBox = document.createElement('div');
+        textBox.className = 'rounded-2xl rounded-bl-sm bg-[#121215] border border-[#26262c] px-4 py-3 text-sm text-zinc-200 leading-relaxed space-y-2.5';
+        textBox.innerHTML = formatMarkdown(payload.text);
+        bodyCol.appendChild(textBox);
+      }
+
+      if (payload.repairedBlob) {
+        bodyCol.appendChild(createDirectBlobCard(payload.repairedBlob));
+      }
+
+      if (payload.artifacts && payload.artifacts.length) {
+        for (const art of payload.artifacts) {
+          bodyCol.appendChild(await createArtifactCard(art));
+        }
+      }
+
+      wrapper.appendChild(avatar);
+      wrapper.appendChild(bodyCol);
+      container.appendChild(wrapper);
+      scrollToBottom();
+    }
+
+    function createDirectBlobCard(item) {
+      const card = document.createElement('div');
+      card.className = 'rounded-xl bg-[#18181c] border border-emerald-500/30 p-3.5 flex items-center justify-between gap-3';
+      card.innerHTML =
+        '<div class="min-w-0">' +
+          '<div class="flex items-center gap-2">' +
+            '<span class="text-[10px] font-mono uppercase px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400">MCADDON</span>' +
+            '<span class="text-xs font-semibold text-zinc-100 truncate">' + escapeHtml(item.filename) + '</span>' +
+          '</div>' +
+          '<p class="text-[11px] text-zinc-400 mt-1">' + escapeHtml(item.description) + '</p>' +
+        '</div>' +
+        '<button type="button" class="dl-btn shrink-0 px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium transition">Descargar</button>';
+      card.querySelector('.dl-btn').onclick = function() { triggerDownload(item.blob, item.filename); };
+      return card;
+    }
+
+    async function createArtifactCard(art) {
+      const card = document.createElement('div');
+      card.className = 'rounded-xl bg-[#18181c] border border-emerald-500/30 p-3.5 flex flex-col gap-3';
+
+      if (art.type === 'texture') {
+        const w = art.width || 16;
+        const h = art.height || 16;
+        const canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        for (let y = 0; y < h; y++) {
+          const row = (art.pixels && art.pixels[y]) || '';
+          for (let x = 0; x < w; x++) {
+            const color = (art.palette && art.palette[row[x] || '.']) || 'transparent';
+            if (color !== 'transparent') {
+              ctx.fillStyle = color;
+              ctx.fillRect(x, y, 1, 1);
+            }
+          }
+        }
+        const pngDataUrl = canvas.toDataURL('image/png');
+        card.innerHTML =
+          '<div class="flex items-center justify-between gap-3">' +
+            '<div class="flex items-center gap-3 min-w-0">' +
+              '<img src="' + pngDataUrl + '" class="w-12 h-12 rounded-lg bg-zinc-900 border border-[#26262c] p-1 pixelated shrink-0" />' +
+              '<div class="min-w-0">' +
+                '<div class="text-xs font-semibold text-zinc-100 truncate">' + escapeHtml(art.filename) + '</div>' +
+                '<div class="text-[11px] text-zinc-400">' + escapeHtml(art.description) + '</div>' +
+              '</div>' +
+            '</div>' +
+            '<button type="button" class="dl-tex shrink-0 px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium transition">Descargar PNG</button>' +
+          '</div>';
+        card.querySelector('.dl-tex').onclick = function() {
+          canvas.toBlob(function(blob) { triggerDownload(blob, art.filename); }, 'image/png');
+        };
+        return card;
+      }
+
+      return card;
+    }
+
+    function triggerDownload(blob, filename) {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(function() {
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }, 300);
+    }
+
+    function formatMarkdown(text) {
+      let html = escapeHtml(text);
+      html = html.replace(/```([a-zA-Z0-9_-]*)\n([\s\S]*?)```/g, function(_, lang, code) {
+        const cleanCode = code.trim();
+        const ext = lang || 'txt';
+        const fn = ext === 'js' || ext === 'javascript' ? 'script.js' : ext === 'json' ? 'archivo.json' : 'codigo.' + ext;
+        const encoded = encodeURIComponent(cleanCode);
+        return '<div class="my-2 rounded-xl overflow-hidden border border-[#26262c] bg-[#09090b]">' +
+          '<div class="flex items-center justify-between px-3 py-1.5 bg-[#18181c] border-b border-[#26262c] text-[11px] text-zinc-400 font-mono">' +
+            '<span>' + escapeHtml(ext) + '</span>' +
+            '<div class="flex items-center gap-2">' +
+              '<button type="button" onclick="copyEncodedCode(this, \'' + encoded + '\')" class="hover:text-zinc-100">Copiar</button>' +
+              '<button type="button" onclick="downloadEncodedCode(\'' + fn + '\', \'' + encoded + '\')" class="text-emerald-400 hover:text-emerald-300">Descargar</button>' +
+            '</div>' +
+          '</div>' +
+          '<pre class="p-3 text-xs font-mono text-zinc-200 overflow-x-auto"><code>' + cleanCode + '</code></pre>' +
+        '</div>';
+      });
+      html = html.replace(/`([^`\n]+)`/g, '<code class="px-1.5 py-0.5 rounded bg-[#09090b] border border-[#26262c] text-emerald-300 font-mono text-xs">$1</code>');
+      html = html.replace(/\*\*([^*]+)\*\*/g, '<strong class="font-semibold text-zinc-100">$1</strong>');
+      html = html.replace(/\n/g, '<br>');
+      return html;
+    }
+
+    function copyEncodedCode(btn, encoded) {
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(decodeURIComponent(encoded));
+      }
+      const old = btn.textContent;
+      btn.textContent = '¡Copiado!';
+      setTimeout(function() { btn.textContent = old; }, 1500);
+    }
+
+    function downloadEncodedCode(filename, encoded) {
+      const blob = new Blob([decodeURIComponent(encoded)], { type: 'text/plain;charset=utf-8' });
+      triggerDownload(blob, filename);
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function scrollToBottom() {
+      const scroller = document.getElementById('chatScroll');
+      scroller.scrollTop = scroller.scrollHeight;
+    }
+
+    function clearChat() {
+      state.messages = [];
+      state.pendingAttachments = [];
+      state.project = {
+        name: "Mi_Addon_MCBE",
+        bpUuid: null,
+        rpUuid: null,
+        files: {},
+        features: [],
+        notes: []
+      };
+      refreshProjectBadge();
+      renderAttachmentPreview();
+      document.getElementById('chatContainer').innerHTML =
+        '<div class="py-12 text-center text-xs text-zinc-500">' +
+          'Proyecto y chat reiniciados. Dime qué addon quieres empezar o sube uno.' +
+        '</div>';
+    }
+  </script>
+</body>
+</html>
