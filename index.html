@@ -1,0 +1,1157 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#09090b" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Bedrock Studio AI</title>
+
+  <link id="dynamicManifest" rel="manifest" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script>
+    if (window.tailwind) {
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+              mono: ['JetBrains Mono', 'monospace'],
+            },
+            colors: {
+              bgMain: '#09090b',
+              bgCard: '#121215',
+              bgElevated: '#18181c',
+              borderSubtle: '#26262c',
+              accent: '#10b981',
+              accentHover: '#059669',
+            }
+          }
+        }
+      };
+    }
+  </script>
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+    html, body {
+      height: 100dvh;
+      margin: 0;
+      padding: 0;
+      background-color: #09090b;
+      color: #f4f4f5;
+      overflow: hidden;
+      overscroll-behavior: none;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+    ::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #27272a;
+      border-radius: 9999px;
+    }
+    .pixelated {
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+    }
+    @keyframes pulseDot {
+      0%, 100% { opacity: 0.3; transform: scale(0.85); }
+      50% { opacity: 1; transform: scale(1); }
+    }
+    .typing-dot {
+      animation: pulseDot 1.3s infinite ease-in-out;
+    }
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+  </style>
+</head>
+<body class="flex flex-col h-dvh bg-[#09090b] text-zinc-100 antialiased">
+
+  <!-- Header Minimalista -->
+  <header class="shrink-0 h-14 px-3 sm:px-6 border-b border-[#26262c] bg-[#09090b]/95 backdrop-blur-md flex items-center justify-between z-20">
+    <div class="flex items-center gap-2.5 min-w-0">
+      <div class="w-8 h-8 rounded-lg bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+          <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+          <line x1="12" y1="22.08" x2="12" y2="12"/>
+        </svg>
+      </div>
+      <div class="min-w-0">
+        <div class="flex items-center gap-1.5">
+          <h1 class="text-sm font-semibold tracking-tight text-zinc-100 truncate">Bedrock Studio AI</h1>
+          <span class="text-[10px] font-mono uppercase px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shrink-0">MCBE</span>
+        </div>
+        <p id="statusText" class="text-[11px] text-zinc-400 flex items-center gap-1.5 truncate">
+          <span id="statusDot" class="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0"></span>
+          <span id="statusLabel">Listo · Addons, Scripts, UI y Texturas</span>
+        </p>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-1.5 shrink-0">
+      <button type="button" onclick="openSettingsModal()" title="Configurar API Key"
+        class="p-2 rounded-lg text-zinc-400 hover:text-zinc-100 hover:bg-[#18181c] border border-[#26262c] transition">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+      </button>
+
+      <button type="button" onclick="clearChat()" title="Nueva conversación"
+        class="text-xs text-zinc-400 hover:text-zinc-100 px-2.5 py-1.5 rounded-lg hover:bg-[#18181c] border border-[#26262c] transition flex items-center gap-1.5">
+        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+        </svg>
+        <span class="hidden sm:inline">Limpiar chat</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Área de Chat -->
+  <main id="chatScroll" class="flex-1 overflow-y-auto px-3 sm:px-6 py-5">
+    <div id="chatContainer" class="max-w-3xl mx-auto flex flex-col gap-5 pb-4">
+
+      <div id="welcomeScreen" class="my-auto py-6 sm:py-10 flex flex-col items-center text-center">
+        <div class="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/25 flex items-center justify-center text-emerald-400 mb-4 shadow-lg shadow-emerald-950/30">
+          <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="12 2 2 7 12 12 22 7 12 2"/>
+            <polyline points="2 17 12 22 22 17"/>
+            <polyline points="2 12 12 17 22 12"/>
+          </svg>
+        </div>
+        <h2 class="text-xl sm:text-2xl font-semibold text-zinc-100 tracking-tight mb-2">
+          ¿Qué quieres construir hoy?
+        </h2>
+        <p class="text-sm text-zinc-400 max-w-md mb-6 leading-relaxed">
+          Pídeme crear un <span class="text-zinc-200 font-medium">.mcaddon</span> completo, scripts en <span class="text-zinc-200 font-medium">.js</span>, interfaces de menú UI, texturas PNG o adjunta tus archivos <span class="text-zinc-200 font-medium">.zip / .mcaddon</span> e imágenes para analizarlos o repararlos.
+        </p>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 w-full max-w-xl text-left">
+          <button type="button" onclick="usePrompt('Crea un addon completo .mcaddon con un ítem llamado Game que al usarlo abra un menú ActionFormData con botones para PvP, Parkour y Tienda.')"
+            class="p-3.5 rounded-xl bg-[#121215] hover:bg-[#18181c] border border-[#26262c] hover:border-zinc-700 transition group">
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-xs font-semibold text-emerald-400">Addon + Menú UI</span>
+              <span class="text-zinc-600 group-hover:text-zinc-400 text-xs">→</span>
+            </div>
+            <p class="text-xs text-zinc-400 line-clamp-2">Ítem personalizado que abre un menú de minijuegos con @minecraft/server-ui listo para descargar.</p>
+          </button>
+
+          <button type="button" onclick="usePrompt('Genera un script main.js con @minecraft/server que proteja una zona PvP contra romper bloques y entregue un kit de espada y armadura al entrar.')"
+            class="p-3.5 rounded-xl bg-[#121215] hover:bg-[#18181c] border border-[#26262c] hover:border-zinc-700 transition group">
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-xs font-semibold text-sky-400">Script .JS Bedrock</span>
+              <span class="text-zinc-600 group-hover:text-zinc-400 text-xs">→</span>
+            </div>
+            <p class="text-xs text-zinc-400 line-clamp-2">Código limpio con Script API oficial y botón de descarga directa en .js.</p>
+          </button>
+
+          <button type="button" onclick="usePrompt('Crea una textura 16x16 estilo Minecraft para un ítem de control de videojuegos oscuro con botones de colores y dámela lista para descargar en PNG.')"
+            class="p-3.5 rounded-xl bg-[#121215] hover:bg-[#18181c] border border-[#26262c] hover:border-zinc-700 transition group">
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-xs font-semibold text-amber-400">Textura Pixel Art PNG</span>
+              <span class="text-zinc-600 group-hover:text-zinc-400 text-xs">→</span>
+            </div>
+            <p class="text-xs text-zinc-400 line-clamp-2">Genera sprites 16x16 o 32x32 con vista previa y descarga instantánea en PNG.</p>
+          </button>
+
+          <button type="button" onclick="triggerFileInput()"
+            class="p-3.5 rounded-xl bg-[#121215] hover:bg-[#18181c] border border-[#26262c] hover:border-zinc-700 transition group">
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-xs font-semibold text-purple-400">Analizar / Reparar .MCADDON</span>
+              <span class="text-zinc-600 group-hover:text-zinc-400 text-xs">↑</span>
+            </div>
+            <p class="text-xs text-zinc-400 line-clamp-2">Importa un .zip, .mcaddon, .js o imagen para inspeccionar y reparar.</p>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Barra Inferior de Entrada -->
+  <footer class="shrink-0 px-3 sm:px-6 pb-3 pt-2 bg-[#09090b] border-t border-[#26262c]/70">
+    <div class="max-w-3xl mx-auto">
+      <div id="attachmentPreviewBar" class="hidden flex-wrap gap-2 mb-2.5 max-h-28 overflow-y-auto p-1"></div>
+
+      <div class="relative flex items-end gap-2 bg-[#121215] border border-[#26262c] focus-within:border-zinc-600 rounded-2xl p-2 shadow-lg">
+        <input type="file" id="fileInput" multiple
+          class="hidden" onchange="handleFilesSelected(event)" />
+
+        <button type="button" onclick="triggerFileInput()" title="Importar imagen, .mcaddon, .zip, .js o documento"
+          class="shrink-0 w-9 h-9 rounded-xl flex items-center justify-center text-zinc-400 hover:text-zinc-100 hover:bg-[#18181c] transition">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+          </svg>
+        </button>
+
+        <textarea id="promptInput" rows="1" placeholder="Describe el addon, script, menú UI o textura..."
+          class="flex-1 bg-transparent text-sm text-zinc-100 placeholder-zinc-500 resize-none border-0 focus:outline-none py-2 max-h-36 leading-relaxed"
+          oninput="autoResizeTextarea(this)"
+          onkeydown="handleInputKeydown(event)"></textarea>
+
+        <button id="sendBtn" type="button" onclick="sendMessage()" title="Enviar"
+          class="shrink-0 w-9 h-9 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 disabled:pointer-events-none text-white flex items-center justify-center transition shadow-sm">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
+            <line x1="12" y1="19" x2="12" y2="5"/>
+            <polyline points="5 12 12 5 19 12"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Modal de Configuración de API Key -->
+  <div id="settingsModal" class="hidden fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-[#121215] border border-[#26262c] rounded-2xl max-w-md w-full p-5 shadow-2xl">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-sm font-semibold text-zinc-100">Conexión de IA</h3>
+        <button type="button" onclick="closeSettingsModal()" class="text-zinc-400 hover:text-zinc-100 text-lg leading-none">&times;</button>
+      </div>
+      <p class="text-xs text-zinc-400 leading-relaxed mb-3">
+        Puedes pegar aquí tu clave gratuita de <strong>Google AI Studio</strong> o usar la app directamente con el <strong>Motor Local Integrado</strong> sin conexión.
+      </p>
+      <label class="block text-[11px] font-medium text-zinc-300 mb-1">API Key de Gemini (Opcional)</label>
+      <input id="apiKeyInput" type="password" placeholder="AIzaSy..."
+        class="w-full px-3 py-2 rounded-xl bg-[#09090b] border border-[#26262c] text-xs text-zinc-100 font-mono focus:outline-none focus:border-emerald-500 mb-4" />
+      <div class="flex items-center justify-end gap-2">
+        <button type="button" onclick="clearApiKey()" class="px-3 py-1.5 rounded-lg text-xs text-zinc-400 hover:text-zinc-200 hover:bg-[#18181c]">
+          Usar modo local
+        </button>
+        <button type="button" onclick="saveApiKey()" class="px-3.5 py-1.5 rounded-lg text-xs font-medium bg-emerald-600 hover:bg-emerald-500 text-white">
+          Guardar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function setupManifest() {
+      try {
+        const manifest = {
+          name: "Bedrock Studio AI",
+          short_name: "Bedrock AI",
+          start_url: ".",
+          display: "standalone",
+          background_color: "#09090b",
+          theme_color: "#09090b",
+          description: "Crea, analiza y repara addons, scripts .js, menús UI y texturas para Minecraft Bedrock."
+        };
+        const blob = new Blob([JSON.stringify(manifest)], { type: "application/manifest+json" });
+        const link = document.getElementById("dynamicManifest");
+        if (link) link.href = URL.createObjectURL(blob);
+      } catch (e) {}
+    })();
+
+    const state = {
+      messages: [],
+      pendingAttachments: [],
+      isGenerating: false
+    };
+
+    const BUILTIN_KEY = "";
+
+    function getActiveApiKey() {
+      try {
+        const saved = localStorage.getItem('bedrock_studio_api_key');
+        if (saved && saved.trim()) return saved.trim();
+      } catch (e) {}
+      if (BUILTIN_KEY && BUILTIN_KEY.trim()) return BUILTIN_KEY.trim();
+      return '';
+    }
+
+    function updateStatusIndicator(modeText, isWarning) {
+      const label = document.getElementById('statusLabel');
+      const dot = document.getElementById('statusDot');
+      if (label) label.textContent = modeText;
+      if (dot) {
+        dot.className = isWarning
+          ? 'w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0'
+          : 'w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0';
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', function() {
+      const key = getActiveApiKey();
+      if (key) {
+        updateStatusIndicator('IA Conectada · Addons, Scripts y Texturas', false);
+      } else {
+        updateStatusIndicator('Motor Bedrock Local · Listo para crear y reparar', false);
+      }
+    });
+
+    function openSettingsModal() {
+      try {
+        document.getElementById('apiKeyInput').value = localStorage.getItem('bedrock_studio_api_key') || '';
+      } catch (e) {}
+      document.getElementById('settingsModal').classList.remove('hidden');
+    }
+
+    function closeSettingsModal() {
+      document.getElementById('settingsModal').classList.add('hidden');
+    }
+
+    function saveApiKey() {
+      const val = document.getElementById('apiKeyInput').value.trim();
+      try {
+        if (val) {
+          localStorage.setItem('bedrock_studio_api_key', val);
+          updateStatusIndicator('IA Conectada · Clave personalizada activa', false);
+        } else {
+          localStorage.removeItem('bedrock_studio_api_key');
+          updateStatusIndicator('Motor Bedrock Local · Listo para crear y reparar', false);
+        }
+      } catch (e) {}
+      closeSettingsModal();
+    }
+
+    function clearApiKey() {
+      try {
+        localStorage.removeItem('bedrock_studio_api_key');
+      } catch (e) {}
+      document.getElementById('apiKeyInput').value = '';
+      updateStatusIndicator('Motor Bedrock Local · Listo para crear y reparar', false);
+      closeSettingsModal();
+    }
+
+    function generateUUID() {
+      if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        const r = Math.random() * 16 | 0;
+        const v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+      });
+    }
+
+    function autoResizeTextarea(el) {
+      el.style.height = 'auto';
+      el.style.height = Math.min(el.scrollHeight, 144) + 'px';
+    }
+
+    function handleInputKeydown(e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    }
+
+    function usePrompt(text) {
+      const input = document.getElementById('promptInput');
+      input.value = text;
+      autoResizeTextarea(input);
+      input.focus();
+    }
+
+    function triggerFileInput() {
+      document.getElementById('fileInput').click();
+    }
+
+    function stripJsonComments(str) {
+      return str
+        .replace(/\\"|"(?:\\"|[^"])*"|(\/\/.*|\/\*[\s\S]*?\*\/)/g, function(m, g) { return g ? "" : m; })
+        .replace(/,\s*([\]}])/g, '$1');
+    }
+
+    async function analyzeArchiveLocally(file, arrayBuffer) {
+      if (!window.JSZip) {
+        throw new Error('La librería JSZip aún está cargando. Verifica tu conexión a internet e inténtalo de nuevo.');
+      }
+      const zip = await JSZip.loadAsync(arrayBuffer);
+      const entries = Object.keys(zip.files).filter(function(name) { return !zip.files[name].dir; });
+
+      const report = {
+        totalFiles: entries.length,
+        manifests: [],
+        jsonErrors: [],
+        scripts: [],
+        entities: [],
+        items: [],
+        blocks: [],
+        uiFiles: [],
+        textures: [],
+        foldersTop: new Set(),
+        keyFilesContent: {},
+        issues: [],
+        rawZip: zip
+      };
+
+      const uuidsSeen = new Map();
+
+      for (const path of entries) {
+        const lower = path.toLowerCase();
+        const parts = path.split('/');
+        if (parts.length > 1) report.foldersTop.add(parts[0]);
+
+        if (lower.endsWith('.js')) report.scripts.push(path);
+        else if (lower.includes('entities/') && lower.endsWith('.json')) report.entities.push(path);
+        else if (lower.includes('items/') && lower.endsWith('.json')) report.items.push(path);
+        else if (lower.includes('blocks/') && lower.endsWith('.json')) report.blocks.push(path);
+        else if (lower.includes('ui/') && lower.endsWith('.json')) report.uiFiles.push(path);
+        else if (lower.endsWith('.png') || lower.endsWith('.tga')) report.textures.push(path);
+
+        if (lower.endsWith('.json')) {
+          try {
+            const rawText = await zip.files[path].async('string');
+            const parsed = JSON.parse(stripJsonComments(rawText));
+
+            if (lower.endsWith('manifest.json')) {
+              const header = parsed.header || {};
+              const modules = Array.isArray(parsed.modules) ? parsed.modules : [];
+              const deps = Array.isArray(parsed.dependencies) ? parsed.dependencies : [];
+
+              if (!header.uuid) {
+                report.issues.push('El archivo "' + path + '" no tiene header.uuid.');
+              } else {
+                if (uuidsSeen.has(header.uuid)) {
+                  report.issues.push('UUID duplicado (' + header.uuid + ') en "' + path + '" y "' + uuidsSeen.get(header.uuid) + '".');
+                }
+                uuidsSeen.set(header.uuid, path);
+              }
+
+              if (!header.min_engine_version) {
+                report.issues.push('Falta "min_engine_version" en "' + path + '".');
+              }
+
+              modules.forEach(function(m, idx) {
+                if (!m.uuid) {
+                  report.issues.push('Módulo #' + (idx + 1) + ' sin UUID en "' + path + '".');
+                } else if (uuidsSeen.has(m.uuid)) {
+                  report.issues.push('UUID de módulo duplicado (' + m.uuid + ') en "' + path + '".');
+                } else {
+                  uuidsSeen.set(m.uuid, path + ' (module)');
+                }
+              });
+
+              report.manifests.push({
+                path: path,
+                name: header.name || 'Sin nombre',
+                uuid: header.uuid || 'FALTANTE',
+                version: header.version || [1, 0, 0],
+                minEngine: header.min_engine_version || 'No definida',
+                modules: modules.map(function(m) { return { type: m.type, entry: m.entry, version: m.version }; }),
+                dependencies: deps
+              });
+
+              report.keyFilesContent[path] = rawText.slice(0, 3000);
+            }
+          } catch (err) {
+            report.jsonErrors.push({ path: path, error: err.message });
+            report.issues.push('Error de sintaxis JSON en "' + path + '": ' + err.message);
+          }
+        }
+      }
+
+      if (report.manifests.length === 0) {
+        report.issues.push('No se encontró ningún "manifest.json" dentro del paquete.');
+      }
+
+      for (const sp of report.scripts.slice(0, 3)) {
+        try {
+          const txt = await zip.files[sp].async('string');
+          report.keyFilesContent[sp] = txt.slice(0, 3500);
+        } catch (e) {}
+      }
+
+      let summary = '=== REPORTE TÉCNICO: ' + file.name + ' ===\n';
+      summary += '• Total de archivos: ' + report.totalFiles + '\n';
+      summary += '• Carpetas raíz: ' + (Array.from(report.foldersTop).join(', ') || '(raíz)') + '\n';
+      summary += '• Manifests (' + report.manifests.length + '): ' + (report.manifests.map(function(m) { return m.path; }).join(', ') || 'ninguno') + '\n';
+      summary += '• Scripts: ' + report.scripts.length + ' | Entidades: ' + report.entities.length + ' | Ítems: ' + report.items.length + ' | Bloques: ' + report.blocks.length + ' | UI: ' + report.uiFiles.length + ' | Texturas: ' + report.textures.length + '\n';
+      if (report.issues.length > 0) {
+        summary += '• Problemas (' + report.issues.length + '): ' + report.issues.slice(0, 15).join(' | ') + '\n';
+      }
+      return { summary: summary, report: report };
+    }
+
+    async function handleFilesSelected(event) {
+      const files = Array.from(event.target.files || []);
+      if (!files.length) return;
+
+      for (const file of files) {
+        const ext = file.name.split('.').pop().toLowerCase();
+
+        if (file.type.startsWith('image/') || ['png', 'jpg', 'jpeg', 'webp'].includes(ext)) {
+          const dataUrl = await readFileAsDataURL(file);
+          const base64 = dataUrl.split(',')[1];
+          state.pendingAttachments.push({
+            id: generateUUID(),
+            name: file.name,
+            kind: 'image',
+            mimeType: file.type || 'image/png',
+            dataUrl: dataUrl,
+            base64: base64
+          });
+        } else if (['zip', 'mcaddon', 'mcpack'].includes(ext)) {
+          try {
+            const arrayBuffer = await file.arrayBuffer();
+            const res = await analyzeArchiveLocally(file, arrayBuffer);
+            state.pendingAttachments.push({
+              id: generateUUID(),
+              name: file.name,
+              kind: 'archive',
+              ext: ext,
+              fileCount: res.report.totalFiles,
+              extractedText: res.summary,
+              archiveReport: res.report
+            });
+          } catch (err) {
+            state.pendingAttachments.push({
+              id: generateUUID(),
+              name: file.name,
+              kind: 'text',
+              ext: ext,
+              extractedText: '[Error al leer ' + file.name + ': ' + err.message + ']'
+            });
+          }
+        } else {
+          const text = await file.text();
+          state.pendingAttachments.push({
+            id: generateUUID(),
+            name: file.name,
+            kind: 'text',
+            ext: ext,
+            extractedText: text.slice(0, 25000)
+          });
+        }
+      }
+
+      event.target.value = '';
+      renderAttachmentPreview();
+    }
+
+    function readFileAsDataURL(file) {
+      return new Promise(function(resolve, reject) {
+        const reader = new FileReader();
+        reader.onload = function() { resolve(reader.result); };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function removePendingAttachment(id) {
+      state.pendingAttachments = state.pendingAttachments.filter(function(a) { return a.id !== id; });
+      renderAttachmentPreview();
+    }
+
+    function renderAttachmentPreview() {
+      const bar = document.getElementById('attachmentPreviewBar');
+      if (!state.pendingAttachments.length) {
+        bar.classList.add('hidden');
+        bar.classList.remove('flex');
+        bar.innerHTML = '';
+        return;
+      }
+
+      bar.classList.remove('hidden');
+      bar.classList.add('flex');
+      bar.innerHTML = state.pendingAttachments.map(function(att) {
+        if (att.kind === 'image') {
+          return '<div class="relative flex items-center gap-2 bg-[#18181c] border border-[#26262c] rounded-xl p-1.5 pr-7">' +
+            '<img src="' + att.dataUrl + '" alt="' + escapeHtml(att.name) + '" class="w-8 h-8 rounded-lg object-cover bg-black/40" />' +
+            '<span class="text-xs text-zinc-300 max-w-[120px] truncate">' + escapeHtml(att.name) + '</span>' +
+            '<button type="button" onclick="removePendingAttachment(\'' + att.id + '\')" class="absolute right-1.5 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-zinc-800 hover:bg-red-500/80 text-zinc-300 hover:text-white flex items-center justify-center text-xs">×</button>' +
+          '</div>';
+        }
+        const badge = att.kind === 'archive' ? (att.ext.toUpperCase() + ' · ' + att.fileCount) : att.ext.toUpperCase();
+        return '<div class="relative flex items-center gap-2 bg-[#18181c] border border-[#26262c] rounded-xl px-2.5 py-1.5 pr-7">' +
+          '<span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/20">' + badge + '</span>' +
+          '<span class="text-xs text-zinc-300 max-w-[140px] truncate">' + escapeHtml(att.name) + '</span>' +
+          '<button type="button" onclick="removePendingAttachment(\'' + att.id + '\')" class="absolute right-1.5 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-zinc-800 hover:bg-red-500/80 text-zinc-300 hover:text-white flex items-center justify-center text-xs">×</button>' +
+        '</div>';
+      }).join('');
+    }
+
+    async function buildRepairedArchive(archiveReport, originalName) {
+      const zip = new JSZip();
+      const oldZip = archiveReport.rawZip;
+      const entries = Object.keys(oldZip.files);
+      const uuidMap = new Map();
+
+      for (const path of entries) {
+        const entry = oldZip.files[path];
+        if (entry.dir) continue;
+        const lower = path.toLowerCase();
+
+        if (lower.endsWith('manifest.json')) {
+          try {
+            const raw = await entry.async('string');
+            const parsed = JSON.parse(stripJsonComments(raw));
+            if (!parsed.header) parsed.header = {};
+            if (!parsed.header.name) parsed.header.name = originalName.replace(/\.(mcaddon|zip|mcpack)$/i, '');
+            if (!parsed.header.description) parsed.header.description = 'Reparado con Bedrock Studio AI';
+            if (!parsed.header.version) parsed.header.version = [1, 0, 0];
+            if (!parsed.header.min_engine_version) parsed.header.min_engine_version = [1, 21, 0];
+
+            const oldHeaderUuid = parsed.header.uuid;
+            const newHeaderUuid = generateUUID();
+            if (oldHeaderUuid) uuidMap.set(oldHeaderUuid, newHeaderUuid);
+            parsed.header.uuid = newHeaderUuid;
+
+            if (Array.isArray(parsed.modules)) {
+              parsed.modules = parsed.modules.map(function(m) {
+                return Object.assign({}, m, {
+                  uuid: generateUUID(),
+                  version: m.version || [1, 0, 0]
+                });
+              });
+            }
+            zip.file(path, JSON.stringify(parsed, null, 2));
+          } catch (e) {
+            const fallbackManifest = {
+              format_version: 2,
+              header: {
+                name: 'Pack Reparado',
+                description: 'Manifest reconstruido',
+                uuid: generateUUID(),
+                version: [1, 0, 0],
+                min_engine_version: [1, 21, 0]
+              },
+              modules: [{ type: 'data', uuid: generateUUID(), version: [1, 0, 0] }]
+            };
+            zip.file(path, JSON.stringify(fallbackManifest, null, 2));
+          }
+        } else if (lower.endsWith('.json')) {
+          try {
+            const raw = await entry.async('string');
+            const parsed = JSON.parse(stripJsonComments(raw));
+            zip.file(path, JSON.stringify(parsed, null, 2));
+          } catch (e) {
+            const raw = await entry.async('string');
+            zip.file(path, raw);
+          }
+        } else {
+          const data = await entry.async('uint8array');
+          zip.file(path, data);
+        }
+      }
+
+      for (const path of Object.keys(zip.files)) {
+        if (path.toLowerCase().endsWith('manifest.json')) {
+          const txt = await zip.files[path].async('string');
+          const parsed = JSON.parse(txt);
+          if (Array.isArray(parsed.dependencies)) {
+            parsed.dependencies = parsed.dependencies.map(function(d) {
+              if (d.uuid && uuidMap.has(d.uuid)) {
+                return Object.assign({}, d, { uuid: uuidMap.get(d.uuid) });
+              }
+              return d;
+            });
+            zip.file(path, JSON.stringify(parsed, null, 2));
+          }
+        }
+      }
+
+      return await zip.generateAsync({ type: 'blob' });
+    }
+
+    async function runLocalEngine(userText, attachments) {
+      const lower = (userText || '').toLowerCase();
+      const archiveAtt = attachments.find(function(a) { return a.kind === 'archive'; });
+
+      if (archiveAtt && archiveAtt.archiveReport) {
+        const rep = archiveAtt.archiveReport;
+        let msg = 'He revisado **' + archiveAtt.name + '** (' + rep.totalFiles + ' archivos).\n\n';
+        msg += '- **Carpetas raíz:** `' + (Array.from(rep.foldersTop).join(', ') || 'raíz') + '`\n';
+        msg += '- **Manifests:** ' + rep.manifests.length + '\n';
+        msg += '- **Scripts:** ' + rep.scripts.length + ' · **UI:** ' + rep.uiFiles.length + ' · **Texturas:** ' + rep.textures.length + '\n\n';
+
+        if (rep.issues.length > 0) {
+          msg += '**Problemas detectados:**\n' + rep.issues.slice(0, 10).map(function(i) { return '- ' + i; }).join('\n') + '\n\n';
+        } else {
+          msg += 'Sin errores críticos de sintaxis JSON ni UUIDs duplicados.\n\n';
+        }
+
+        const fixedName = archiveAtt.name.replace(/\.(mcaddon|zip|mcpack)$/i, '_reparado.$1');
+        const fixedBlob = await buildRepairedArchive(rep, fixedName);
+
+        return {
+          text: msg + 'Aquí tienes la copia lista para descargar:',
+          repairedBlob: {
+            filename: fixedName,
+            blob: fixedBlob,
+            description: 'Paquete generado (' + rep.totalFiles + ' archivos)'
+          },
+          artifacts: []
+        };
+      }
+
+      if (lower.includes('textura') || lower.includes('png') || lower.includes('icono') || lower.includes('sprite') || lower.includes('control')) {
+        const P = {
+          ".": "transparent", "K": "#121318", "D": "#262936", "G": "#3e4357",
+          "L": "#5b627d", "R": "#ef4444", "B": "#3b82f6", "E": "#10b981", "Y": "#f59e0b"
+        };
+        const grid = [
+          "................", "................", "................", "...KKKKKKKKKK...",
+          "..KDDDDDDDDDDK..", ".KDGGGGGGGGGGDK.", ".KDGLLGGGGLLGDK.", ".KDGGLGGGGGGYGDK.",
+          ".KDGLLGGGGBRRDK.", ".KDGLGGGGGGEDK..", ".KDDDDDDDDDDDDK.", "..KDDDKKKKDDDK..",
+          "..KDDK....KDDK..", "...KK......KK...", "................", "................"
+        ];
+        return {
+          text: 'Textura **16x16** lista para descargar en PNG:',
+          artifacts: [{
+            type: 'texture',
+            filename: 'textura_16x16.png',
+            description: 'Sprite 16x16 pixel art',
+            width: 16, height: 16, palette: P, pixels: grid
+          }]
+        };
+      }
+
+      if (lower.includes('addon') || lower.includes('mcaddon') || lower.includes('menú') || lower.includes('menu') || lower.includes('ui') || lower.includes('pvp') || lower.includes('item') || lower.includes('ítem')) {
+        const bpUuid = generateUUID();
+        const rpUuid = generateUUID();
+
+        const bpManifest = JSON.stringify({
+          format_version: 2,
+          header: {
+            name: "Custom Menu Addon BP",
+            description: "Generado con Bedrock Studio AI",
+            uuid: bpUuid,
+            version: [1, 0, 0],
+            min_engine_version: [1, 21, 0]
+          },
+          modules: [
+            { type: "data", uuid: generateUUID(), version: [1, 0, 0] },
+            { type: "script", language: "javascript", uuid: generateUUID(), version: [1, 0, 0], entry: "scripts/main.js" }
+          ],
+          dependencies: [
+            { module_name: "@minecraft/server", version: "1.14.0" },
+            { module_name: "@minecraft/server-ui", version: "1.3.0" },
+            { uuid: rpUuid, version: [1, 0, 0] }
+          ]
+        }, null, 2);
+
+        const rpManifest = JSON.stringify({
+          format_version: 2,
+          header: {
+            name: "Custom Menu Addon RP",
+            description: "Recursos",
+            uuid: rpUuid,
+            version: [1, 0, 0],
+            min_engine_version: [1, 21, 0]
+          },
+          modules: [{ type: "resources", uuid: generateUUID(), version: [1, 0, 0] }]
+        }, null, 2);
+
+        const mainJs = [
+          'import { world, system } from "@minecraft/server";',
+          'import { ActionFormData } from "@minecraft/server-ui";',
+          '',
+          'function abrirMenu(player) {',
+          '  const form = new ActionFormData()',
+          '    .title("§l§8Menú Principal")',
+          '    .body("§7Selecciona una opción:")',
+          '    .button("§l§cPvP\\n§r§8Ir a combate")',
+          '    .button("§l§aParkour\\n§r§8Ir a recorrido")',
+          '    .button("§l§eTienda\\n§r§8Ver tienda");',
+          '',
+          '  form.show(player).then((res) => {',
+          '    if (res.canceled) return;',
+          '    if (res.selection === 0) player.sendMessage("§a[PvP] §fOpción seleccionada.");',
+          '    if (res.selection === 1) player.sendMessage("§a[Parkour] §fOpción seleccionada.");',
+          '    if (res.selection === 2) player.sendMessage("§e[Tienda] §fOpción seleccionada.");',
+          '  });',
+          '}',
+          '',
+          'world.afterEvents.itemUse.subscribe((ev) => {',
+          '  if (ev.itemStack?.typeId === "minecraft:compass") {',
+          '    system.run(() => abrirMenu(ev.source));',
+          '  }',
+          '});'
+        ].join('\n');
+
+        return {
+          text: 'Paquete **`.mcaddon`** generado con `manifest.json` y `scripts/main.js` (se abre al usar una Brújula):',
+          artifacts: [{
+            type: 'mcaddon',
+            filename: 'Addon_Menu_MCBE.mcaddon',
+            description: 'BP + RP + Script API',
+            files: [
+              { path: 'BehaviorPack/manifest.json', content: bpManifest },
+              { path: 'BehaviorPack/scripts/main.js', content: mainJs },
+              { path: 'ResourcePack/manifest.json', content: rpManifest }
+            ]
+          }]
+        };
+      }
+
+      const genericScript = [
+        'import { world } from "@minecraft/server";',
+        '',
+        'world.afterEvents.playerSpawn.subscribe((event) => {',
+        '  if (event.initialSpawn) {',
+        '    event.player.sendMessage("§a¡Bienvenido a §e" + event.player.name + "§a!");',
+        '  }',
+        '});'
+      ].join('\n');
+
+      return {
+        text: 'Script **`main.js`** generado:\n\n```js\n' + genericScript + '\n```',
+        artifacts: [{
+          type: 'file',
+          filename: 'main.js',
+          description: 'Script para Minecraft Bedrock',
+          content: genericScript
+        }]
+      };
+    }
+
+    async function sendMessage() {
+      if (state.isGenerating) return;
+      const input = document.getElementById('promptInput');
+      const text = input.value.trim();
+      const attachments = state.pendingAttachments.slice();
+      if (!text && !attachments.length) return;
+
+      const welcome = document.getElementById('welcomeScreen');
+      if (welcome) welcome.remove();
+
+      input.value = '';
+      input.style.height = 'auto';
+      state.pendingAttachments = [];
+      renderAttachmentPreview();
+
+      appendUserMessage(text, attachments);
+      state.isGenerating = true;
+      document.getElementById('sendBtn').disabled = true;
+      const typingId = appendTypingIndicator();
+
+      try {
+        const apiKey = getActiveApiKey();
+        let responsePayload;
+        if (apiKey) {
+          try {
+            responsePayload = await callGeminiAPI(apiKey, text, attachments);
+          } catch (e) {
+            responsePayload = await runLocalEngine(text, attachments);
+          }
+        } else {
+          await new Promise(function(r) { setTimeout(r, 300); });
+          responsePayload = await runLocalEngine(text, attachments);
+        }
+        removeElement(typingId);
+        await appendAssistantMessage(responsePayload);
+      } catch (e) {
+        removeElement(typingId);
+        const fallback = await runLocalEngine(text, attachments);
+        await appendAssistantMessage(fallback);
+      } finally {
+        state.isGenerating = false;
+        document.getElementById('sendBtn').disabled = false;
+        scrollToBottom();
+      }
+    }
+
+    async function callGeminiAPI(apiKey, userText, attachments) {
+      const systemInstruction = 'Eres Bedrock Studio AI, experto en Minecraft Bedrock Edition (.mcaddon, .js con @minecraft/server y @minecraft/server-ui, UI JSON y texturas). Responde en español.';
+      const parts = [];
+      let fullPrompt = userText || 'Analiza los archivos adjuntos.';
+      for (const att of attachments) {
+        if (att.kind === 'archive' || att.kind === 'text') fullPrompt += '\n\n' + att.extractedText;
+      }
+      parts.push({ text: fullPrompt });
+      for (const att of attachments) {
+        if (att.kind === 'image') parts.push({ inlineData: { mimeType: att.mimeType, data: att.base64 } });
+      }
+      state.messages.push({ role: 'user', parts: parts });
+
+      const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' + encodeURIComponent(apiKey);
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          systemInstruction: { parts: [{ text: systemInstruction }] },
+          contents: state.messages.slice(-8)
+        })
+      });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+      const rawReply = (data && data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0] && data.candidates[0].content.parts[0].text) || '';
+      if (!rawReply) throw new Error('Vacío');
+      state.messages.push({ role: 'model', parts: [{ text: rawReply }] });
+
+      const archiveAtt = attachments.find(function(a) { return a.kind === 'archive' && a.archiveReport; });
+      let repairedBlob = null;
+      if (archiveAtt) {
+        const fixedName = archiveAtt.name.replace(/\.(mcaddon|zip|mcpack)$/i, '_reparado.$1');
+        repairedBlob = {
+          filename: fixedName,
+          blob: await buildRepairedArchive(archiveAtt.archiveReport, fixedName),
+          description: 'Paquete procesado (' + archiveAtt.fileCount + ' archivos)'
+        };
+      }
+      return { text: rawReply, artifacts: [], repairedBlob: repairedBlob };
+    }
+
+    function appendUserMessage(text, attachments) {
+      const container = document.getElementById('chatContainer');
+      const wrapper = document.createElement('div');
+      wrapper.className = 'flex flex-col items-end gap-2';
+
+      if (attachments && attachments.length) {
+        const attRow = document.createElement('div');
+        attRow.className = 'flex flex-wrap justify-end gap-2 max-w-[85%]';
+        attachments.forEach(function(att) {
+          if (att.kind === 'image') {
+            attRow.innerHTML += '<div class="rounded-xl overflow-hidden border border-[#26262c] bg-[#121215] p-1"><img src="' + att.dataUrl + '" class="max-h-40 rounded-lg object-contain" /></div>';
+          } else {
+            const sub = att.kind === 'archive' ? (att.ext.toUpperCase() + ' · ' + att.fileCount) : att.ext.toUpperCase();
+            attRow.innerHTML += '<div class="flex items-center gap-2 bg-[#18181c] border border-[#26262c] rounded-xl px-3 py-2"><span class="text-xs font-medium text-zinc-200 truncate max-w-[160px]">' + escapeHtml(att.name) + '</span><span class="text-[10px] text-emerald-400 font-mono">' + sub + '</span></div>';
+          }
+        });
+        wrapper.appendChild(attRow);
+      }
+
+      if (text) {
+        const bubble = document.createElement('div');
+        bubble.className = 'max-w-[85%] sm:max-w-[75%] rounded-2xl rounded-br-sm bg-zinc-800 border border-zinc-700/70 px-4 py-2.5 text-sm text-zinc-100 whitespace-pre-wrap leading-relaxed';
+        bubble.textContent = text;
+        wrapper.appendChild(bubble);
+      }
+
+      container.appendChild(wrapper);
+      scrollToBottom();
+    }
+
+    function appendTypingIndicator() {
+      const container = document.getElementById('chatContainer');
+      const id = 'typing-' + generateUUID();
+      const div = document.createElement('div');
+      div.id = id;
+      div.className = 'flex items-start gap-3';
+      div.innerHTML = '<div class="w-7 h-7 rounded-lg bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0 text-xs font-bold">AI</div><div class="rounded-2xl rounded-bl-sm bg-[#121215] border border-[#26262c] px-4 py-3 flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400 typing-dot"></span><span class="w-1.5 h-1.5 rounded-full bg-emerald-400 typing-dot"></span><span class="w-1.5 h-1.5 rounded-full bg-emerald-400 typing-dot"></span></div>';
+      container.appendChild(div);
+      scrollToBottom();
+      return id;
+    }
+
+    function removeElement(id) {
+      const el = document.getElementById(id);
+      if (el) el.remove();
+    }
+
+    async function appendAssistantMessage(payload) {
+      const container = document.getElementById('chatContainer');
+      const wrapper = document.createElement('div');
+      wrapper.className = 'flex items-start gap-2.5 sm:gap-3';
+
+      const avatar = document.createElement('div');
+      avatar.className = 'w-7 h-7 rounded-lg bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0 mt-0.5 text-xs font-bold';
+      avatar.textContent = 'AI';
+
+      const bodyCol = document.createElement('div');
+      bodyCol.className = 'flex-1 min-w-0 flex flex-col gap-3';
+
+      if (payload.text) {
+        const textBox = document.createElement('div');
+        textBox.className = 'rounded-2xl rounded-bl-sm bg-[#121215] border border-[#26262c] px-4 py-3 text-sm text-zinc-200 leading-relaxed space-y-2.5';
+        textBox.innerHTML = formatMarkdown(payload.text);
+        bodyCol.appendChild(textBox);
+      }
+
+      if (payload.repairedBlob) {
+        bodyCol.appendChild(createDirectBlobCard(payload.repairedBlob));
+      }
+
+      if (payload.artifacts && payload.artifacts.length) {
+        for (const art of payload.artifacts) {
+          bodyCol.appendChild(await createArtifactCard(art));
+        }
+      }
+
+      wrapper.appendChild(avatar);
+      wrapper.appendChild(bodyCol);
+      container.appendChild(wrapper);
+      scrollToBottom();
+    }
+
+    function createDirectBlobCard(item) {
+      const card = document.createElement('div');
+      card.className = 'rounded-xl bg-[#18181c] border border-emerald-500/30 p-3.5 flex items-center justify-between gap-3';
+      card.innerHTML =
+        '<div class="min-w-0">' +
+          '<div class="flex items-center gap-2">' +
+            '<span class="text-[10px] font-mono uppercase px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400">MCADDON</span>' +
+            '<span class="text-xs font-semibold text-zinc-100 truncate">' + escapeHtml(item.filename) + '</span>' +
+          '</div>' +
+          '<p class="text-[11px] text-zinc-400 mt-1">' + escapeHtml(item.description) + '</p>' +
+        '</div>' +
+        '<button type="button" class="dl-btn shrink-0 px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium transition">Descargar</button>';
+      card.querySelector('.dl-btn').onclick = function() { triggerDownload(item.blob, item.filename); };
+      return card;
+    }
+
+    async function createArtifactCard(art) {
+      const card = document.createElement('div');
+      card.className = 'rounded-xl bg-[#18181c] border border-emerald-500/30 p-3.5 flex flex-col gap-3';
+
+      if (art.type === 'texture') {
+        const w = art.width || 16;
+        const h = art.height || 16;
+        const canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        for (let y = 0; y < h; y++) {
+          const row = (art.pixels && art.pixels[y]) || '';
+          for (let x = 0; x < w; x++) {
+            const color = (art.palette && art.palette[row[x] || '.']) || 'transparent';
+            if (color !== 'transparent') {
+              ctx.fillStyle = color;
+              ctx.fillRect(x, y, 1, 1);
+            }
+          }
+        }
+        const pngDataUrl = canvas.toDataURL('image/png');
+        card.innerHTML =
+          '<div class="flex items-center justify-between gap-3">' +
+            '<div class="flex items-center gap-3 min-w-0">' +
+              '<img src="' + pngDataUrl + '" class="w-12 h-12 rounded-lg bg-zinc-900 border border-[#26262c] p-1 pixelated shrink-0" />' +
+              '<div class="min-w-0">' +
+                '<div class="text-xs font-semibold text-zinc-100 truncate">' + escapeHtml(art.filename) + '</div>' +
+                '<div class="text-[11px] text-zinc-400">' + escapeHtml(art.description) + '</div>' +
+              '</div>' +
+            '</div>' +
+            '<button type="button" class="dl-tex shrink-0 px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium transition">Descargar PNG</button>' +
+          '</div>';
+        card.querySelector('.dl-tex').onclick = function() {
+          canvas.toBlob(function(blob) { triggerDownload(blob, art.filename); }, 'image/png');
+        };
+        return card;
+      }
+
+      if (art.type === 'mcaddon' || art.type === 'zip') {
+        const filesHtml = art.files.map(function(f) {
+          return '<span class="text-[10px] font-mono px-2 py-0.5 rounded bg-[#09090b] border border-[#26262c] text-zinc-300">' + escapeHtml(f.path) + '</span>';
+        }).join('');
+        card.innerHTML =
+          '<div class="flex items-center justify-between gap-3">' +
+            '<div class="min-w-0">' +
+              '<div class="flex items-center gap-2">' +
+                '<span class="text-[10px] font-mono uppercase px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400">' + art.type + '</span>' +
+                '<span class="text-xs font-semibold text-zinc-100 truncate">' + escapeHtml(art.filename) + '</span>' +
+              '</div>' +
+              '<p class="text-[11px] text-zinc-400 mt-1">' + escapeHtml(art.description) + '</p>' +
+            '</div>' +
+            '<button type="button" class="dl-pkg shrink-0 px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium transition">Descargar</button>' +
+          '</div>' +
+          '<div class="flex flex-wrap gap-1.5">' + filesHtml + '</div>';
+        card.querySelector('.dl-pkg').onclick = async function() {
+          if (!window.JSZip) {
+            alert('No se pudo cargar JSZip. Revisa tu conexión a internet.');
+            return;
+          }
+          const zip = new JSZip();
+          art.files.forEach(function(f) { zip.file(f.path, f.content); });
+          const blob = await zip.generateAsync({ type: 'blob' });
+          triggerDownload(blob, art.filename);
+        };
+        return card;
+      }
+
+      card.innerHTML =
+        '<div class="flex items-center justify-between gap-3">' +
+          '<div class="min-w-0">' +
+            '<div class="text-xs font-semibold text-zinc-100 truncate">' + escapeHtml(art.filename) + '</div>' +
+            '<div class="text-[11px] text-zinc-400">' + escapeHtml(art.description) + '</div>' +
+          '</div>' +
+          '<button type="button" class="dl-file shrink-0 px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium transition">Descargar</button>' +
+        '</div>';
+      card.querySelector('.dl-file').onclick = function() {
+        const blob = new Blob([art.content], { type: 'text/plain;charset=utf-8' });
+        triggerDownload(blob, art.filename);
+      };
+      return card;
+    }
+
+    function triggerDownload(blob, filename) {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(function() {
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }, 300);
+    }
+
+    function formatMarkdown(text) {
+      let html = escapeHtml(text);
+      html = html.replace(/```([a-zA-Z0-9_-]*)\n([\s\S]*?)```/g, function(_, lang, code) {
+        const cleanCode = code.trim();
+        const ext = lang || 'txt';
+        const fn = ext === 'js' || ext === 'javascript' ? 'script.js' : ext === 'json' ? 'archivo.json' : 'codigo.' + ext;
+        const encoded = encodeURIComponent(cleanCode);
+        return '<div class="my-2 rounded-xl overflow-hidden border border-[#26262c] bg-[#09090b]">' +
+          '<div class="flex items-center justify-between px-3 py-1.5 bg-[#18181c] border-b border-[#26262c] text-[11px] text-zinc-400 font-mono">' +
+            '<span>' + escapeHtml(ext) + '</span>' +
+            '<div class="flex items-center gap-2">' +
+              '<button type="button" onclick="copyEncodedCode(this, \'' + encoded + '\')" class="hover:text-zinc-100">Copiar</button>' +
+              '<button type="button" onclick="downloadEncodedCode(\'' + fn + '\', \'' + encoded + '\')" class="text-emerald-400 hover:text-emerald-300">Descargar</button>' +
+            '</div>' +
+          '</div>' +
+          '<pre class="p-3 text-xs font-mono text-zinc-200 overflow-x-auto"><code>' + cleanCode + '</code></pre>' +
+        '</div>';
+      });
+      html = html.replace(/`([^`\n]+)`/g, '<code class="px-1.5 py-0.5 rounded bg-[#09090b] border border-[#26262c] text-emerald-300 font-mono text-xs">$1</code>');
+      html = html.replace(/\*\*([^*]+)\*\*/g, '<strong class="font-semibold text-zinc-100">$1</strong>');
+      html = html.replace(/\n/g, '<br>');
+      return html;
+    }
+
+    function copyEncodedCode(btn, encoded) {
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(decodeURIComponent(encoded));
+      }
+      const old = btn.textContent;
+      btn.textContent = '¡Copiado!';
+      setTimeout(function() { btn.textContent = old; }, 1500);
+    }
+
+    function downloadEncodedCode(filename, encoded) {
+      const blob = new Blob([decodeURIComponent(encoded)], { type: 'text/plain;charset=utf-8' });
+      triggerDownload(blob, filename);
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function scrollToBottom() {
+      const scroller = document.getElementById('chatScroll');
+      scroller.scrollTop = scroller.scrollHeight;
+    }
+
+    function clearChat() {
+      state.messages = [];
+      state.pendingAttachments = [];
+      renderAttachmentPreview();
+      document.getElementById('chatContainer').innerHTML =
+        '<div class="py-12 text-center text-xs text-zinc-500">' +
+          'Chat reiniciado. Escribe tu instrucción o adjunta un archivo .mcaddon, .zip, .js o imagen.' +
+        '</div>';
+    }
+  </script>
+</body>
+</html>
